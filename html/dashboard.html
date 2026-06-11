@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinPilot — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+    <a href="./dashboard.html" class="sidebar-logo">
+      <div class="logo-mark" aria-hidden="true">✈</div>
+      <span class="logo-text">Fin<span>Pilot</span></span>
+    </a>
+
+    <nav class="sidebar-nav" role="navigation">
+      <span class="nav-section-label">Principal</span>
+
+      <a href="./dashboard.html" class="nav-item active" aria-current="page">
+        <span class="nav-item-icon" aria-hidden="true">📊</span>
+        Dashboard
+      </a>
+      <a href="./receitas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📈</span>
+        Receitas
+      </a>
+      <a href="./despesas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📉</span>
+        Despesas
+      </a>
+
+      <span class="nav-section-label">Gestão</span>
+
+      <a href="./metas.html" class="nav-item" id="nav-metas">
+        <span class="nav-item-icon" aria-hidden="true">🎯</span>
+        Metas
+      </a>
+      <a href="./relatorios.html" class="nav-item" id="nav-relatorios">
+        <span class="nav-item-icon" aria-hidden="true">📋</span>
+        Relatórios
+      </a>
+
+      <span class="nav-section-label">Conta</span>
+
+      <a href="./perfil.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">👤</span>
+        Perfil
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card" id="user-card-sidebar">
+        <div class="user-avatar" id="user-avatar-initials" aria-hidden="true">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">—</div>
+          <div class="user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button class="btn btn-ghost btn-icon btn-sm" id="logout-btn" title="Sair" aria-label="Fazer logout">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">☰</button>
+        <div class="page-breadcrumb">
+          <span>FinPilot</span>
+          <span aria-hidden="true">›</span>
+          <span class="page-title-bar">Dashboard</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div id="current-month-label" class="text-sm text-muted"></div>
+      </div>
+    </header>
+
+    <main class="page-content" role="main" id="main-dashboard">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-heading">Visão Geral</h1>
+          <p class="page-subheading">Acompanhe a saúde financeira do seu negócio</p>
+        </div>
+        <div class="flex gap-3">
+          <select class="form-control" id="filter-month" aria-label="Filtrar por mês" style="width:auto">
+            <option value="">Todos os meses</option>
+          </select>
+          <a href="../assets/js/api.js" class="btn btn-success btn-sm">+ Receita</a>
+          <a href="./despesas.html" class="btn btn-danger btn-sm">+ Despesa</a>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="grid-4 mb-8" id="kpi-grid">
+        <div class="stat-card">
+          <div class="stat-icon green" aria-hidden="true">💰</div>
+          <div class="stat-label">Receita Total</div>
+          <div class="stat-value" id="kpi-receita">R$ —</div>
+          <div class="stat-delta positive" id="kpi-receita-delta">+ 0 lançamentos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red" aria-hidden="true">💸</div>
+          <div class="stat-label">Despesa Total</div>
+          <div class="stat-value" id="kpi-despesa">R$ —</div>
+          <div class="stat-delta negative" id="kpi-despesa-delta">+ 0 lançamentos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon brand" aria-hidden="true">⚖</div>
+          <div class="stat-label">Saldo Atual</div>
+          <div class="stat-value" id="kpi-saldo">R$ —</div>
+          <div class="stat-delta" id="kpi-saldo-delta">resultado do período</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon yellow" aria-hidden="true">🎯</div>
+          <div class="stat-label">Meta Mensal</div>
+          <div class="stat-value" id="kpi-meta">R$ —</div>
+          <div class="stat-delta positive" id="kpi-meta-delta">0% concluída</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid-2-1 mb-8">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Receitas x Despesas</div>
+              <div class="card-subtitle">Evolução nos últimos 6 meses</div>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chart-recdesp" height="200" aria-label="Gráfico de Receitas x Despesas"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Gastos por Categoria</div>
+              <div class="card-subtitle">Distribuição atual</div>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chart-categorias" height="220" aria-label="Gráfico de gastos por categoria"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metas + Fluxo -->
+      <div class="grid-2 mb-8">
+        <!-- Metas -->
+        <div class="card" id="metas-section">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Metas Financeiras</div>
+              <div class="card-subtitle">Progresso do mês</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="btn-nova-meta">+ Nova Meta</button>
+          </div>
+          <div id="metas-list">
+            <div class="empty-state" id="metas-empty">
+              <div class="empty-state-icon" aria-hidden="true">🎯</div>
+              <h3>Nenhuma meta definida</h3>
+              <p>Defina metas mensais para controlar melhor seus resultados.</p>
+              <button class="btn btn-primary btn-sm" id="btn-nova-meta-2">Criar primeira meta</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fluxo de Caixa -->
+        <div class="card" id="relatorios-section">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Fluxo de Caixa</div>
+              <div class="card-subtitle">Últimos 30 dias</div>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chart-fluxo" height="220" aria-label="Gráfico de fluxo de caixa"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Últimas Transações</div>
+            <div class="card-subtitle">10 mais recentes</div>
+          </div>
+          <div class="flex gap-3">
+            <a href="./receitas.html" class="btn btn-ghost btn-sm">Ver receitas</a>
+            <a href="./despesas.html" class="btn btn-ghost btn-sm">Ver despesas</a>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table aria-label="Últimas transações">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Data</th>
+                <th>Tipo</th>
+                <th class="text-right">Valor</th>
+              </tr>
+            </thead>
+            <tbody id="recent-tbody">
+              <tr>
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-state-icon" aria-hidden="true">📭</div>
+                    <p>Nenhuma transação encontrada</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal: Nova/Editar Meta -->
+<div class="modal-backdrop" id="modal-meta" role="dialog" aria-modal="true" aria-labelledby="modal-meta-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-meta-title">Nova Meta</h2>
+      <button class="modal-close" id="modal-meta-close" aria-label="Fechar modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-meta" novalidate>
+        <input type="hidden" id="meta-id" />
+        <div class="form-group mb-4">
+          <label class="form-label" for="meta-valor">Meta Mensal (R$)</label>
+          <input class="form-control" type="number" id="meta-valor" placeholder="Ex: 5000" min="1" step="0.01" required />
+          <span class="form-error hidden" id="meta-valor-error" role="alert"></span>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-meta">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-meta">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-text">Salvar Meta</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/dashboard.js"></script>
+
+</body>
+</html>

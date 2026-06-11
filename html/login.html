@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinPilot — Login</title>
+  <meta name="description" content="Acesse sua conta FinPilot e gerencie as finanças do seu negócio." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<main class="auth-page" role="main">
+  <!-- Ambient glows -->
+  <div class="auth-bg-glow one" aria-hidden="true"></div>
+  <div class="auth-bg-glow two" aria-hidden="true"></div>
+
+  <article class="auth-card fade-in" aria-label="Formulário de login">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="logo-mark" aria-hidden="true">✈</div>
+      <span class="logo-text">Fin<span>Pilot</span></span>
+    </div>
+
+    <h1 class="auth-heading">Bem-vindo de volta</h1>
+    <p class="auth-subheading">Entre na sua conta para continuar</p>
+
+    <form class="auth-form" id="login-form" novalidate>
+
+      <div class="form-group">
+        <label class="form-label" for="email">E-mail</label>
+        <div class="input-icon-wrapper">
+          <span class="input-icon" aria-hidden="true">✉</span>
+          <input
+            class="form-control"
+            type="email"
+            id="email"
+            name="email"
+            placeholder="seu@email.com"
+            autocomplete="email"
+            required
+          />
+        </div>
+        <span class="form-error hidden" id="email-error" role="alert"></span>
+      </div>
+
+      <div class="form-group">
+        <div class="flex justify-between items-center">
+          <label class="form-label" for="password">Senha</label>
+        </div>
+        <div class="input-icon-wrapper">
+          <span class="input-icon" aria-hidden="true">🔒</span>
+          <input
+            class="form-control"
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          />
+          <button
+            type="button"
+            class="input-icon-right"
+            id="toggle-password"
+            aria-label="Mostrar/ocultar senha"
+          >👁</button>
+        </div>
+        <span class="form-error hidden" id="password-error" role="alert"></span>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg" id="login-btn" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-text">Entrar na conta</span>
+      </button>
+
+    </form>
+
+    <p class="auth-footer">
+      Não tem uma conta?
+      <a href="./register.html" aria-label="Criar nova conta">Criar conta grátis</a>
+    </p>
+
+  </article>
+</main>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script>
+  // Toggle password visibility
+  document.getElementById('toggle-password').addEventListener('click', function () {
+    const input = document.getElementById('password');
+    const isPassword = input.type === 'password';
+    input.type = isPassword ? 'text' : 'password';
+    this.textContent = isPassword ? '🙈' : '👁';
+  });
+
+  // Login form submission
+  document.getElementById('login-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn      = document.getElementById('login-btn');
+
+    // Clear errors
+    clearErrors();
+
+    // Validate
+    let hasError = false;
+    if (!email || !isValidEmail(email)) {
+      showError('email-error', 'E-mail inválido.');
+      document.getElementById('email').classList.add('error');
+      hasError = true;
+    }
+    if (!password || password.length < 6) {
+      showError('password-error', 'Senha deve ter ao menos 6 caracteres.');
+      document.getElementById('password').classList.add('error');
+      hasError = true;
+    }
+    if (hasError) return;
+
+    // Submit
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+      const result = await API.login(email, password);
+      if (result.access_token) {
+        Auth.saveToken(result.access_token, result.user);
+        showToast('success', 'Login realizado!', 'Redirecionando para o dashboard...');
+        setTimeout(() => { window.location.href = './dashboard.html'; }, 800);
+      } else {
+        showToast('error', 'Erro no login', result.detail || 'Credenciais inválidas.');
+      }
+    } catch (err) {
+      showToast('error', 'Erro de conexão', err.message || 'Verifique se o servidor está rodando.');
+    } finally {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  });
+
+  function clearErrors() {
+    document.querySelectorAll('.form-error').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.form-control').forEach(el => el.classList.remove('error'));
+  }
+
+  function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  // Redirect if already logged in
+  if (Auth && Auth.isLoggedIn()) {
+    window.location.href = './dashboard.html';
+  }
+</script>
+</body>
+</html>

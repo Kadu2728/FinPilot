@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinPilot — Criar Conta</title>
+  <meta name="description" content="Crie sua conta no FinPilot e comece a gerenciar as finanças do seu negócio." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<main class="auth-page" role="main">
+  <div class="auth-bg-glow one" aria-hidden="true"></div>
+  <div class="auth-bg-glow two" aria-hidden="true"></div>
+
+  <article class="auth-card fade-in" aria-label="Formulário de cadastro">
+
+    <div class="auth-logo">
+      <div class="logo-mark" aria-hidden="true">✈</div>
+      <span class="logo-text">Fin<span>Pilot</span></span>
+    </div>
+
+    <h1 class="auth-heading">Criar sua conta</h1>
+    <p class="auth-subheading">Comece a controlar suas finanças hoje</p>
+
+    <form class="auth-form" id="register-form" novalidate>
+
+      <div class="form-group">
+        <label class="form-label" for="nome">Nome completo</label>
+        <div class="input-icon-wrapper">
+          <span class="input-icon" aria-hidden="true">👤</span>
+          <input
+            class="form-control"
+            type="text"
+            id="nome"
+            name="nome"
+            placeholder="Seu nome"
+            autocomplete="name"
+            required
+          />
+        </div>
+        <span class="form-error hidden" id="nome-error" role="alert"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">E-mail</label>
+        <div class="input-icon-wrapper">
+          <span class="input-icon" aria-hidden="true">✉</span>
+          <input
+            class="form-control"
+            type="email"
+            id="email"
+            name="email"
+            placeholder="seu@email.com"
+            autocomplete="email"
+            required
+          />
+        </div>
+        <span class="form-error hidden" id="email-error" role="alert"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Senha</label>
+        <div class="input-icon-wrapper">
+          <span class="input-icon" aria-hidden="true">🔒</span>
+          <input
+            class="form-control"
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Mín. 6 caracteres"
+            autocomplete="new-password"
+            required
+          />
+          <button type="button" class="input-icon-right" id="toggle-pw" aria-label="Ver senha">👁</button>
+        </div>
+        <span class="form-error hidden" id="password-error" role="alert"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="confirm-password">Confirmar senha</label>
+        <div class="input-icon-wrapper">
+          <span class="input-icon" aria-hidden="true">🔒</span>
+          <input
+            class="form-control"
+            type="password"
+            id="confirm-password"
+            name="confirm-password"
+            placeholder="Repita a senha"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+        <span class="form-error hidden" id="confirm-error" role="alert"></span>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full btn-lg" id="register-btn">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-text">Criar conta grátis</span>
+      </button>
+
+    </form>
+
+    <p class="auth-footer">
+      Já tem uma conta? <a href="./login.html">Entrar</a>
+    </p>
+
+  </article>
+</main>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script>
+  document.getElementById('toggle-pw').addEventListener('click', function () {
+    const input = document.getElementById('password');
+    const show  = input.type === 'password';
+    input.type  = show ? 'text' : 'password';
+    this.textContent = show ? '🙈' : '👁';
+  });
+
+  document.getElementById('register-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const nome     = document.getElementById('nome').value.trim();
+    const email    = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm  = document.getElementById('confirm-password').value;
+    const btn      = document.getElementById('register-btn');
+
+    clearErrors();
+
+    let hasError = false;
+    if (!nome || nome.length < 2) {
+      showError('nome-error', 'Nome deve ter ao menos 2 caracteres.'); hasError = true;
+      document.getElementById('nome').classList.add('error');
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('email-error', 'E-mail inválido.'); hasError = true;
+      document.getElementById('email').classList.add('error');
+    }
+    if (!password || password.length < 6) {
+      showError('password-error', 'Senha deve ter ao menos 6 caracteres.'); hasError = true;
+      document.getElementById('password').classList.add('error');
+    }
+    if (password !== confirm) {
+      showError('confirm-error', 'As senhas não coincidem.'); hasError = true;
+      document.getElementById('confirm-password').classList.add('error');
+    }
+    if (hasError) return;
+
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    try {
+      const result = await API.register(nome, email, password);
+      if (result.id) {
+        showToast('success', 'Conta criada!', 'Faça login para continuar.');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+      } else {
+        showToast('error', 'Erro ao criar conta', result.detail || 'Tente novamente.');
+      }
+    } catch (err) {
+      showToast('error', 'Erro de conexão', err.message || 'Verifique se o servidor está rodando.');
+    } finally {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  });
+
+  function clearErrors() {
+    document.querySelectorAll('.form-error').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.form-control').forEach(el => el.classList.remove('error'));
+  }
+  function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  if (Auth && Auth.isLoggedIn()) window.location.href = 'dashboard.html';
+</script>
+</body>
+</html>

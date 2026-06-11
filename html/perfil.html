@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinPilot — Perfil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+  <style>
+    /* ── Perfil page extras ───────────────────────────────── */
+    .perfil-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+
+    /* Left column — sticky card */
+    .perfil-sidebar-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      text-align: center;
+      position: sticky;
+      top: calc(var(--topbar-height) + var(--space-6));
+    }
+
+    /* Avatar upload */
+    .avatar-wrap {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto var(--space-5);
+    }
+    .avatar-img {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--border);
+    }
+    .avatar-placeholder {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      background: var(--brand-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: white;
+      border: 3px solid rgba(79,110,247,0.3);
+    }
+    .avatar-upload-btn {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--brand-primary);
+      border: 2px solid var(--bg-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: background var(--transition-fast);
+      color: white;
+    }
+    .avatar-upload-btn:hover { background: #3d5ce8; }
+
+    .perfil-display-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .perfil-email-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: var(--space-5);
+    }
+    .perfil-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 5px 12px;
+      background: var(--green-dim);
+      color: var(--green);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: var(--space-6);
+    }
+    .perfil-meta-list {
+      text-align: left;
+      border-top: 1px solid var(--border);
+      padding-top: var(--space-5);
+    }
+    .perfil-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .perfil-meta-item:last-child { border-bottom: none; }
+    .perfil-meta-label { font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+    .perfil-meta-value { font-size: 0.875rem; color: var(--text-primary); font-weight: 500; }
+
+    /* Right column sections */
+    .perfil-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      margin-bottom: var(--space-5);
+    }
+    .perfil-section-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .perfil-section-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .perfil-section-title { font-size: 1rem; font-weight: 600; }
+    .perfil-section-sub   { font-size: 0.8125rem; color: var(--text-muted); }
+    .perfil-section-body  { padding: var(--space-6); }
+
+    /* Preference toggle */
+    .pref-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .pref-item:last-child { border-bottom: none; }
+    .pref-label { font-size: 0.9375rem; font-weight: 500; }
+    .pref-desc  { font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px; }
+    .toggle-switch {
+      position: relative;
+      width: 44px; height: 24px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: var(--bg-overlay);
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      transition: background var(--transition-fast);
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; top: 3px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: transform var(--transition-fast), background var(--transition-fast);
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--brand-primary); border-color: var(--brand-primary); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); background: white; }
+
+    /* Danger zone */
+    .danger-zone {
+      border-color: rgba(239,68,68,0.2) !important;
+    }
+
+    @media (max-width: 1024px) {
+      .perfil-layout { grid-template-columns: 1fr; }
+      .perfil-sidebar-card { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<input type="file" id="avatar-file-input" accept="image/*" style="display:none" />
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+    <a href="./dashboard.html" class="sidebar-logo">
+      <div class="logo-mark" aria-hidden="true">✈</div>
+      <span class="logo-text">Fin<span>Pilot</span></span>
+    </a>
+    <nav class="sidebar-nav" role="navigation">
+      <span class="nav-section-label">Principal</span>
+      <a href="./dashboard.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📊</span>Dashboard
+      </a>
+      <a href="./receitas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📈</span>Receitas
+      </a>
+      <a href="./despesas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📉</span>Despesas
+      </a>
+      <span class="nav-section-label">Gestão</span>
+      <a href="./metas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">🎯</span>Metas
+      </a>
+      <a href="./relatorios.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📋</span>Relatórios
+      </a>
+      <span class="nav-section-label">Conta</span>
+      <a href="./perfil.html" class="nav-item active" aria-current="page">
+        <span class="nav-item-icon" aria-hidden="true">👤</span>Perfil
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar-initials" aria-hidden="true">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">—</div>
+          <div class="user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button class="btn btn-ghost btn-icon btn-sm" id="logout-btn" title="Sair" aria-label="Logout">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">☰</button>
+        <div class="page-breadcrumb">
+          <span>FinPilot</span>
+          <span aria-hidden="true">›</span>
+          <span class="page-title-bar">Perfil</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content" role="main">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-heading">Meu Perfil</h1>
+          <p class="page-subheading">Gerencie suas informações, segurança e preferências</p>
+        </div>
+      </div>
+
+      <div class="perfil-layout">
+
+        <!-- LEFT: Profile card -->
+        <aside>
+          <div class="perfil-sidebar-card">
+            <!-- Avatar -->
+            <div class="avatar-wrap" id="avatar-wrap">
+              <div class="avatar-placeholder" id="avatar-placeholder" aria-label="Foto de perfil">?</div>
+              <button class="avatar-upload-btn" id="avatar-upload-btn" title="Trocar foto" aria-label="Trocar foto de perfil">✎</button>
+            </div>
+
+            <div class="perfil-display-name" id="display-name">—</div>
+            <div class="perfil-email-label" id="display-email">—</div>
+            <div class="perfil-badge">✓ Conta ativa</div>
+
+            <div class="perfil-meta-list">
+              <div class="perfil-meta-item">
+                <span class="perfil-meta-label">Nome completo</span>
+                <span class="perfil-meta-value" id="meta-nome-full">—</span>
+              </div>
+              <div class="perfil-meta-item">
+                <span class="perfil-meta-label">E-mail</span>
+                <span class="perfil-meta-value" id="meta-email">—</span>
+              </div>
+              <div class="perfil-meta-item">
+                <span class="perfil-meta-label">Membro desde</span>
+                <span class="perfil-meta-value" id="meta-since">—</span>
+              </div>
+              <div class="perfil-meta-item">
+                <span class="perfil-meta-label">Último acesso</span>
+                <span class="perfil-meta-value" id="meta-last">Agora</span>
+              </div>
+            </div>
+
+            <button class="btn btn-danger btn-full" id="btn-logout-side" style="margin-top:var(--space-6)">
+              ⏻ Sair da conta
+            </button>
+          </div>
+        </aside>
+
+        <!-- RIGHT: Sections -->
+        <div>
+
+          <!-- Section 1: Nome de exibição -->
+          <div class="perfil-section">
+            <div class="perfil-section-header">
+              <div class="perfil-section-icon" style="background:var(--brand-primary-dim);color:var(--brand-primary)">👤</div>
+              <div>
+                <div class="perfil-section-title">Informações Pessoais</div>
+                <div class="perfil-section-sub">Como você aparece no sistema</div>
+              </div>
+            </div>
+            <div class="perfil-section-body">
+              <form id="form-perfil" novalidate>
+                <div class="grid-2 mb-4">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-nome">Nome completo</label>
+                    <input class="form-control" type="text" id="inp-nome" placeholder="Seu nome completo" />
+                    <span class="form-error hidden" id="nome-error" role="alert"></span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inp-apelido">Como quer ser chamado</label>
+                    <input class="form-control" type="text" id="inp-apelido" placeholder="Ex: Kadu, Carlos, Eduardo" />
+                    <span class="form-hint">Usado nas saudações e no sistema</span>
+                  </div>
+                </div>
+                <div class="form-group mb-5">
+                  <label class="form-label" for="inp-email">E-mail</label>
+                  <input class="form-control" type="email" id="inp-email" disabled />
+                  <span class="form-hint">O e-mail não pode ser alterado.</span>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn-save-perfil">
+                  <span class="spinner" aria-hidden="true"></span>
+                  <span class="btn-text">Salvar Alterações</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Section 2: Segurança -->
+          <div class="perfil-section">
+            <div class="perfil-section-header">
+              <div class="perfil-section-icon" style="background:var(--yellow-dim);color:var(--yellow)">🔒</div>
+              <div>
+                <div class="perfil-section-title">Segurança</div>
+                <div class="perfil-section-sub">Gerencie sua senha e acesso</div>
+              </div>
+            </div>
+            <div class="perfil-section-body">
+              <form id="form-senha" novalidate>
+                <div class="form-group mb-4">
+                  <label class="form-label" for="inp-senha-atual">Senha atual</label>
+                  <div class="input-icon-wrapper">
+                    <span class="input-icon" aria-hidden="true">🔒</span>
+                    <input class="form-control" type="password" id="inp-senha-atual" placeholder="••••••••" autocomplete="current-password" />
+                    <button type="button" class="input-icon-right toggle-pw" data-target="inp-senha-atual" aria-label="Ver senha">👁</button>
+                  </div>
+                </div>
+                <div class="grid-2 mb-5">
+                  <div class="form-group">
+                    <label class="form-label" for="inp-senha-nova">Nova senha</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon" aria-hidden="true">🔒</span>
+                      <input class="form-control" type="password" id="inp-senha-nova" placeholder="Mín. 6 caracteres" autocomplete="new-password" />
+                      <button type="button" class="input-icon-right toggle-pw" data-target="inp-senha-nova" aria-label="Ver senha">👁</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="inp-senha-conf">Confirmar senha</label>
+                    <div class="input-icon-wrapper">
+                      <span class="input-icon" aria-hidden="true">🔒</span>
+                      <input class="form-control" type="password" id="inp-senha-conf" placeholder="Repita a senha" autocomplete="new-password" />
+                      <button type="button" class="input-icon-right toggle-pw" data-target="inp-senha-conf" aria-label="Ver senha">👁</button>
+                    </div>
+                  </div>
+                </div>
+                <!-- Strength indicator -->
+                <div id="pw-strength-wrap" style="margin-bottom:var(--space-5);display:none">
+                  <div class="flex justify-between text-xs mb-4" style="margin-bottom:6px">
+                    <span class="text-muted">Força da senha</span>
+                    <span id="pw-strength-label" class="text-muted">—</span>
+                  </div>
+                  <div class="progress-bar-track">
+                    <div id="pw-strength-bar" class="progress-bar-fill" style="width:0%;transition:width 0.3s"></div>
+                  </div>
+                </div>
+                <span class="form-error hidden" id="senha-error" role="alert"></span>
+                <button type="submit" class="btn btn-secondary mt-4" id="btn-save-senha">
+                  <span class="spinner" aria-hidden="true"></span>
+                  <span class="btn-text">Alterar Senha</span>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Section 3: Preferências -->
+          <div class="perfil-section">
+            <div class="perfil-section-header">
+              <div class="perfil-section-icon" style="background:var(--blue-dim);color:var(--blue)">⚙</div>
+              <div>
+                <div class="perfil-section-title">Preferências</div>
+                <div class="perfil-section-sub">Personalize sua experiência</div>
+              </div>
+            </div>
+            <div class="perfil-section-body">
+              <div class="pref-item">
+                <div>
+                  <div class="pref-label">Notificações de resumo</div>
+                  <div class="pref-desc">Receber resumo financeiro semanal</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="pref-notif" />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="pref-item">
+                <div>
+                  <div class="pref-label">Alertas de metas</div>
+                  <div class="pref-desc">Notificar quando metas estiverem próximas do prazo</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="pref-metas" checked />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="pref-item">
+                <div>
+                  <div class="pref-label">Moeda padrão</div>
+                  <div class="pref-desc">Real Brasileiro (BRL)</div>
+                </div>
+                <span class="badge badge-brand">BRL</span>
+              </div>
+              <div class="pref-item">
+                <div>
+                  <div class="pref-label">Tema</div>
+                  <div class="pref-desc">Escuro — otimizado para uso prolongado</div>
+                </div>
+                <span class="badge badge-blue">Dark</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Zona de risco -->
+          <div class="perfil-section danger-zone">
+            <div class="perfil-section-header">
+              <div class="perfil-section-icon" style="background:var(--red-dim);color:var(--red)">⚠</div>
+              <div>
+                <div class="perfil-section-title" style="color:var(--red)">Zona de Risco</div>
+                <div class="perfil-section-sub">Ações irreversíveis da conta</div>
+              </div>
+            </div>
+            <div class="perfil-section-body">
+              <div class="flex items-center justify-between" style="flex-wrap:wrap;gap:var(--space-4)">
+                <div>
+                  <div class="font-medium">Encerrar sessão</div>
+                  <div class="text-sm text-muted" style="margin-top:2px">Sair de todos os dispositivos e retornar ao login</div>
+                </div>
+                <button class="btn btn-danger" id="btn-logout-danger">Sair da conta</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/perfil.js"></script>
+</body>
+</html>

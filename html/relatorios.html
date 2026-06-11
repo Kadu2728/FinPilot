@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinPilot — Relatórios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+  <style>
+    .period-tabs {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+    .period-tab {
+      padding: 7px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      transition: all var(--transition-fast);
+    }
+    .period-tab:hover { color: var(--text-primary); border-color: rgba(255,255,255,0.12); }
+    .period-tab.active {
+      background: var(--brand-primary-dim);
+      color: var(--brand-primary);
+      border-color: rgba(79,110,247,0.3);
+    }
+    .insight-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+    }
+    .insight-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .insight-body{background: var(--bg-elevated); padding: var(--space-4); border-radius: var(--radius-md);}
+    .insight-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .insight-value { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 2px 0; }
+    .insight-sub   { font-size: 0.8125rem; color: var(--text-secondary); }
+
+    .chart-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+    }
+    .chart-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-5);
+    }
+    .chart-card-title { font-size: 1rem; font-weight: 600; }
+    .chart-card-sub   { font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px; }
+
+    .top-categoria-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .top-categoria-item:last-child { border-bottom: none; }
+    .top-cat-bar-wrap {
+      flex: 1;
+      height: 6px;
+      background: var(--bg-overlay);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .top-cat-bar {
+      height: 100%;
+      border-radius: var(--radius-full);
+      background: var(--brand-gradient);
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+    <a href="./dashboard.html" class="sidebar-logo">
+      <div class="logo-mark" aria-hidden="true">✈</div>
+      <span class="logo-text">Fin<span>Pilot</span></span>
+    </a>
+    <nav class="sidebar-nav" role="navigation">
+      <span class="nav-section-label">Principal</span>
+      <a href="./dashboard.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📊</span>Dashboard
+      </a>
+      <a href="./receitas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📈</span>Receitas
+      </a>
+      <a href="./despesas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📉</span>Despesas
+      </a>
+      <span class="nav-section-label">Gestão</span>
+      <a href="./metas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">🎯</span>Metas
+      </a>
+      <a href="./relatorios.html" class="nav-item active" aria-current="page">
+        <span class="nav-item-icon" aria-hidden="true">📋</span>Relatórios
+      </a>
+      <span class="nav-section-label">Conta</span>
+      <a href="./perfil.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">👤</span>Perfil
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar-initials" aria-hidden="true">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">—</div>
+          <div class="user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button class="btn btn-ghost btn-icon btn-sm" id="logout-btn" title="Sair" aria-label="Logout">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">☰</button>
+        <div class="page-breadcrumb">
+          <span>FinPilot</span>
+          <span aria-hidden="true">›</span>
+          <span class="page-title-bar">Relatórios</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="text-sm text-muted" id="periodo-label">Carregando...</span>
+      </div>
+    </header>
+
+    <main class="page-content" role="main">
+
+      <!-- Header + Filtros -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-heading">Relatórios</h1>
+          <p class="page-subheading">Análise completa da sua vida financeira</p>
+        </div>
+        <div class="period-tabs" id="period-tabs" role="group" aria-label="Período">
+          <button class="period-tab" data-period="7">7 dias</button>
+          <button class="period-tab" data-period="30">30 dias</button>
+          <button class="period-tab active" data-period="90">90 dias</button>
+          <button class="period-tab" data-period="365">Ano atual</button>
+          <button class="period-tab" data-period="all">Tudo</button>
+        </div>
+      </div>
+
+      <!-- Insights KPIs -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:var(--space-4);margin-bottom:var(--space-8)" id="insights-grid">
+        <div class="insight-card">
+          <div class="insight-icon" style="background:var(--green-dim);color:var(--green)">💰</div>
+          <div class="insight-body">
+            <div class="insight-label">Total Receitas</div>
+            <div class="insight-value" id="ins-receita">R$ —</div>
+            <div class="insight-sub" id="ins-receita-count">— lançamentos</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon" style="background:var(--red-dim);color:var(--red)">💸</div>
+          <div class="insight-body">
+            <div class="insight-label">Total Despesas</div>
+            <div class="insight-value" id="ins-despesa">R$ —</div>
+            <div class="insight-sub" id="ins-despesa-count">— lançamentos</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon" style="background:var(--brand-primary-dim);color:var(--brand-primary)">⚖</div>
+          <div class="insight-body">
+            <div class="insight-label">Saldo Acumulado</div>
+            <div class="insight-value" id="ins-saldo">R$ —</div>
+            <div class="insight-sub" id="ins-saldo-label">resultado do período</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon" style="background:var(--green-dim);color:var(--green)">🏆</div>
+          <div class="insight-body">
+            <div class="insight-label">Melhor Mês</div>
+            <div class="insight-value" id="ins-melhor">—</div>
+            <div class="insight-sub" id="ins-melhor-val">—</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon" style="background:var(--red-dim);color:var(--red)">📉</div>
+          <div class="insight-body">
+            <div class="insight-label">Pior Mês</div>
+            <div class="insight-value" id="ins-pior">—</div>
+            <div class="insight-sub" id="ins-pior-val">—</div>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-icon" style="background:var(--yellow-dim);color:var(--yellow)">📊</div>
+          <div class="insight-body">
+            <div class="insight-label">Média Mensal</div>
+            <div class="insight-value" id="ins-media">—</div>
+            <div class="insight-sub">saldo médio</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts row 1 -->
+      <div class="grid-2 mb-6">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Receitas por Mês</div>
+              <div class="chart-card-sub">Entradas no período</div>
+            </div>
+          </div>
+          <canvas id="chart-receitas-mes" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Despesas por Mês</div>
+              <div class="chart-card-sub">Saídas no período</div>
+            </div>
+          </div>
+          <canvas id="chart-despesas-mes" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart row 2 -->
+      <div class="chart-card mb-6">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">Comparativo Receitas × Despesas</div>
+            <div class="chart-card-sub">Evolução mensal no período selecionado</div>
+          </div>
+        </div>
+        <canvas id="chart-comparativo" height="140"></canvas>
+      </div>
+
+      <!-- Row 3: Evolução + Top categorias -->
+      <div class="grid-2-1 mb-6">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Evolução Patrimonial</div>
+              <div class="chart-card-sub">Saldo acumulado ao longo do tempo</div>
+            </div>
+          </div>
+          <canvas id="chart-evolucao" height="200"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Top Categorias</div>
+              <div class="chart-card-sub">Maiores gastos</div>
+            </div>
+          </div>
+          <div id="top-categorias-list"></div>
+        </div>
+      </div>
+
+      <!-- Donut row -->
+      <div class="grid-2 mb-6">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Distribuição de Gastos</div>
+              <div class="chart-card-sub">Por categoria</div>
+            </div>
+          </div>
+          <canvas id="chart-donut-desp" height="240"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Distribuição de Receitas</div>
+              <div class="chart-card-sub">Por categoria</div>
+            </div>
+          </div>
+          <canvas id="chart-donut-rec" height="240"></canvas>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/relatorios.js"></script>
+</body>
+</html>

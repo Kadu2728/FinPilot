@@ -1,0 +1,7 @@
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=kacadu27
+DB_NAME=finpilot
+SECRET_KEY=finpilot-secret-key-2024
+TOKEN_EXPIRE_MINUTES=1440

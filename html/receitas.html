@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinPilot — Receitas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+    <a href="./dashboard.html" class="sidebar-logo">
+      <div class="logo-mark" aria-hidden="true">✈</div>
+      <span class="logo-text">Fin<span>Pilot</span></span>
+    </a>
+    <nav class="sidebar-nav" role="navigation">
+      <span class="nav-section-label">Principal</span>
+      <a href="./dashboard.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📊</span>Dashboard
+      </a>
+      <a href="./receitas.html" class="nav-item active" aria-current="page">
+        <span class="nav-item-icon" aria-hidden="true">📈</span>Receitas
+      </a>
+      <a href="./despesas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📉</span>Despesas
+      </a>
+      <span class="nav-section-label">Gestão</span>
+      <a href="./dashboard.html#metas" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">🎯</span>Metas
+      </a>
+      <a href="./dashboard.html#relatorios" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📋</span>Relatórios
+      </a>
+      <span class="nav-section-label">Conta</span>
+      <a href="./perfil.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">👤</span>Perfil
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar-initials" aria-hidden="true">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">—</div>
+          <div class="user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button class="btn btn-ghost btn-icon btn-sm" id="logout-btn" title="Sair" aria-label="Fazer logout">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">☰</button>
+        <div class="page-breadcrumb">
+          <span>FinPilot</span>
+          <span aria-hidden="true">›</span>
+          <span class="page-title-bar">Receitas</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="badge badge-green" id="total-count-badge">0 receitas</span>
+      </div>
+    </header>
+
+    <main class="page-content" role="main">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-heading">Receitas</h1>
+          <p class="page-subheading">Gerencie todas as suas entradas financeiras</p>
+        </div>
+        <button class="btn btn-primary" id="btn-nova-receita">
+          <span aria-hidden="true">+</span> Nova Receita
+        </button>
+      </div>
+
+      <!-- KPIs rápidos -->
+      <div class="grid-3 mb-8">
+        <div class="stat-card">
+          <div class="stat-icon green" aria-hidden="true">💰</div>
+          <div class="stat-label">Total do Período</div>
+          <div class="stat-value" id="rec-total">R$ 0,00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue" aria-hidden="true">📦</div>
+          <div class="stat-label">Lançamentos</div>
+          <div class="stat-value" id="rec-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon yellow" aria-hidden="true">⌀</div>
+          <div class="stat-label">Ticket Médio</div>
+          <div class="stat-value" id="rec-media">R$ 0,00</div>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filters-bar" role="search" aria-label="Filtros de receitas">
+        <input class="form-control" type="text" id="filter-search" placeholder="🔍 Buscar receita..." aria-label="Buscar" />
+        <select class="form-control" id="filter-categoria" aria-label="Filtrar por categoria">
+          <option value="">Todas as categorias</option>
+          <option>Vendas</option>
+          <option>Serviços</option>
+          <option>Investimentos</option>
+          <option>Outros</option>
+        </select>
+        <input class="form-control" type="month" id="filter-mes" aria-label="Filtrar por mês" />
+        <button class="btn btn-secondary btn-sm" id="btn-clear-filter">Limpar</button>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="table-wrapper">
+          <table aria-label="Lista de receitas">
+            <thead>
+              <tr>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Data</th>
+                <th class="text-right">Valor</th>
+                <th class="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="receitas-tbody">
+              <tr id="loading-row">
+                <td colspan="5" style="padding:32px">
+                  <div class="flex items-center justify-between" style="gap:8px">
+                    <div class="skeleton" style="height:20px;width:200px"></div>
+                    <div class="skeleton" style="height:20px;width:100px"></div>
+                    <div class="skeleton" style="height:20px;width:80px"></div>
+                    <div class="skeleton" style="height:20px;width:120px"></div>
+                    <div class="skeleton" style="height:20px;width:80px"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between" style="padding:16px 20px; border-top:1px solid var(--border)">
+          <span class="text-sm text-muted" id="pagination-info">Mostrando 0 itens</span>
+          <div class="flex gap-2" id="pagination-controls"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal Receita -->
+<div class="modal-backdrop" id="modal-receita" role="dialog" aria-modal="true" aria-labelledby="modal-rec-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-rec-title">Nova Receita</h2>
+      <button class="modal-close" id="modal-rec-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-receita" novalidate>
+        <input type="hidden" id="rec-id" />
+        <div class="form-group mb-4">
+          <label class="form-label" for="rec-descricao">Descrição *</label>
+          <input class="form-control" type="text" id="rec-descricao" placeholder="Ex: Venda de produto X" required />
+          <span class="form-error hidden" id="rec-desc-error" role="alert"></span>
+        </div>
+        <div class="grid-2 mb-4">
+          <div class="form-group">
+            <label class="form-label" for="rec-valor">Valor (R$) *</label>
+            <input class="form-control" type="number" id="rec-valor" placeholder="0,00" min="0.01" step="0.01" required />
+            <span class="form-error hidden" id="rec-valor-error" role="alert"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="rec-data">Data *</label>
+            <input class="form-control" type="date" id="rec-data" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="rec-categoria">Categoria</label>
+          <select class="form-control" id="rec-categoria">
+            <option value="Vendas">Vendas</option>
+            <option value="Serviços">Serviços</option>
+            <option value="Investimentos">Investimentos</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-rec">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-rec">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-text">Salvar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Exclusão -->
+<div class="modal-backdrop" id="modal-confirm-del" role="dialog" aria-modal="true" aria-labelledby="modal-del-title">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-del-title">Excluir Receita</h2>
+      <button class="modal-close" id="modal-del-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-secondary">Tem certeza que deseja excluir esta receita? Esta ação não pode ser desfeita.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-del">Cancelar</button>
+      <button class="btn btn-danger" id="btn-confirm-del">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-text">Sim, excluir</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/receitas.js"></script>
+</body>
+</html>

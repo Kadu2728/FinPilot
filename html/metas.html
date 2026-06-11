@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinPilot — Metas Financeiras</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/styles.css" />
+  <style>
+    /* ── Metas page extras ─────────────────────────────── */
+    .meta-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      transition: all var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+    .meta-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--brand-gradient);
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+    }
+    .meta-card:hover {
+      border-color: rgba(79,110,247,0.25);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .meta-card:hover::after { opacity: 1; }
+
+    .meta-card.completa::after { background: var(--green); opacity: 1; }
+    .meta-card.quase::after    { background: var(--yellow); opacity: 1; }
+
+    .meta-emoji {
+      font-size: 2rem;
+      margin-bottom: var(--space-3);
+      display: block;
+    }
+    .meta-nome {
+      font-size: 1.0625rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: var(--space-1);
+    }
+    .meta-categoria {
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-5);
+    }
+    .meta-valores {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: var(--space-3);
+    }
+    .meta-valor-atual {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+    .meta-valor-alvo {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+    .meta-progresso-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      margin-top: var(--space-2);
+    }
+    .meta-data {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--border);
+    }
+    .meta-actions {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      display: flex;
+      gap: var(--space-2);
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    .meta-card:hover .meta-actions { opacity: 1; }
+
+    .meta-pct-badge {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+    }
+
+    /* Summary bar */
+    .metas-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .summary-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      text-align: center;
+    }
+    .summary-item-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+    .summary-item-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: var(--space-1);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 768px) {
+      .metas-summary { grid-template-columns: repeat(2, 1fr); }
+      .meta-actions { opacity: 1; }
+    }
+    @media (max-width: 480px) {
+      .metas-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar" aria-label="Menu principal">
+    <a href="./dashboard.html" class="sidebar-logo">
+      <div class="logo-mark" aria-hidden="true">✈</div>
+      <span class="logo-text">Fin<span>Pilot</span></span>
+    </a>
+    <nav class="sidebar-nav" role="navigation">
+      <span class="nav-section-label">Principal</span>
+      <a href="dashboard.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📊</span>Dashboard
+      </a>
+      <a href="./receitas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📈</span>Receitas
+      </a>
+      <a href="./despesas.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📉</span>Despesas
+      </a>
+      <span class="nav-section-label">Gestão</span>
+      <a href="./metas.html" class="nav-item active" aria-current="page">
+        <span class="nav-item-icon" aria-hidden="true">🎯</span>Metas
+      </a>
+      <a href="./relatorios.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">📋</span>Relatórios
+      </a>
+      <span class="nav-section-label">Conta</span>
+      <a href="./perfil.html" class="nav-item">
+        <span class="nav-item-icon" aria-hidden="true">👤</span>Perfil
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar" id="user-avatar-initials" aria-hidden="true">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebar-user-name">—</div>
+          <div class="user-email" id="sidebar-user-email">—</div>
+        </div>
+        <button class="btn btn-ghost btn-icon btn-sm" id="logout-btn" title="Sair" aria-label="Logout">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">☰</button>
+        <div class="page-breadcrumb">
+          <span>FinPilot</span>
+          <span aria-hidden="true">›</span>
+          <span class="page-title-bar">Metas Financeiras</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="badge badge-brand" id="badge-total">0 metas</span>
+      </div>
+    </header>
+
+    <main class="page-content" role="main">
+
+      <!-- Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-heading">Metas Financeiras</h1>
+          <p class="page-subheading">Defina objetivos e acompanhe seu progresso</p>
+        </div>
+        <button class="btn btn-primary" id="btn-nova-meta">
+          <span aria-hidden="true">+</span> Nova Meta
+        </button>
+      </div>
+
+      <!-- Summary -->
+      <div class="metas-summary" id="metas-summary">
+        <div class="summary-item">
+          <div class="summary-item-value" id="sum-total">0</div>
+          <div class="summary-item-label">Total de Metas</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-item-value text-green" id="sum-concluidas">0</div>
+          <div class="summary-item-label">Concluídas</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-item-value text-yellow" id="sum-andamento">0</div>
+          <div class="summary-item-label">Em Andamento</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-item-value text-blue" id="sum-investido">R$ 0</div>
+          <div class="summary-item-label">Total Acumulado</div>
+        </div>
+      </div>
+
+      <!-- Grid de metas -->
+      <div id="metas-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--space-5)">
+        <!-- Cards renderizados via JS -->
+      </div>
+
+      <!-- Empty state -->
+      <div id="metas-empty" class="empty-state" style="display:none">
+        <div class="empty-state-icon" aria-hidden="true">🎯</div>
+        <h3>Nenhuma meta definida ainda</h3>
+        <p>Crie sua primeira meta financeira e comece a acompanhar seu progresso em direção aos seus sonhos.</p>
+        <button class="btn btn-primary" id="btn-nova-meta-empty">Criar primeira meta</button>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal Nova/Editar Meta -->
+<div class="modal-backdrop" id="modal-meta" role="dialog" aria-modal="true" aria-labelledby="modal-meta-title">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-meta-title">Nova Meta</h2>
+      <button class="modal-close" id="modal-meta-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-meta" novalidate>
+        <input type="hidden" id="meta-id" />
+
+        <!-- Emoji picker row -->
+        <div class="form-group mb-5">
+          <label class="form-label">Ícone da meta</label>
+          <div style="display:flex;gap:var(--space-2);flex-wrap:wrap" id="emoji-picker">
+            <button type="button" class="emoji-opt" data-emoji="🏠" title="Casa">🏠</button>
+            <button type="button" class="emoji-opt" data-emoji="🚗" title="Carro">🚗</button>
+            <button type="button" class="emoji-opt" data-emoji="✈️" title="Viagem">✈️</button>
+            <button type="button" class="emoji-opt" data-emoji="🎓" title="Educação">🎓</button>
+            <button type="button" class="emoji-opt" data-emoji="💍" title="Casamento">💍</button>
+            <button type="button" class="emoji-opt" data-emoji="🏥" title="Saúde">🏥</button>
+            <button type="button" class="emoji-opt" data-emoji="📱" title="Tecnologia">📱</button>
+            <button type="button" class="emoji-opt" data-emoji="🛡️" title="Reserva">🛡️</button>
+            <button type="button" class="emoji-opt" data-emoji="💼" title="Negócio">💼</button>
+            <button type="button" class="emoji-opt" data-emoji="🎯" title="Objetivo">🎯</button>
+          </div>
+          <input type="hidden" id="meta-emoji" value="🎯" />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="meta-nome">Nome da meta *</label>
+          <input class="form-control" type="text" id="meta-nome" placeholder="Ex: Comprar um carro" required maxlength="80" />
+          <span class="form-error hidden" id="meta-nome-error" role="alert"></span>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="meta-categoria">Categoria</label>
+          <select class="form-control" id="meta-categoria">
+            <option value="Moradia">🏠 Moradia</option>
+            <option value="Transporte">🚗 Transporte</option>
+            <option value="Viagem">✈️ Viagem</option>
+            <option value="Educação">🎓 Educação</option>
+            <option value="Reserva de Emergência">🛡️ Reserva de Emergência</option>
+            <option value="Saúde">🏥 Saúde</option>
+            <option value="Tecnologia">📱 Tecnologia</option>
+            <option value="Investimento">💼 Investimento</option>
+            <option value="Outro">🎯 Outro</option>
+          </select>
+        </div>
+
+        <div class="grid-2 mb-4">
+          <div class="form-group">
+            <label class="form-label" for="meta-valor-alvo">Valor alvo (R$) *</label>
+            <input class="form-control" type="number" id="meta-valor-alvo" placeholder="Ex: 50000" min="1" step="0.01" required />
+            <span class="form-error hidden" id="meta-alvo-error" role="alert"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="meta-valor-atual-inp">Já tenho (R$)</label>
+            <input class="form-control" type="number" id="meta-valor-atual-inp" placeholder="0" min="0" step="0.01" value="0" />
+          </div>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="meta-data-prevista">Data prevista</label>
+          <input class="form-control" type="date" id="meta-data-prevista" />
+          <span class="form-hint">Quando você quer atingir essa meta?</span>
+        </div>
+
+        <!-- Preview bar -->
+        <div style="padding:var(--space-4);background:var(--bg-base);border-radius:var(--radius-md);margin-top:var(--space-2)">
+          <div class="flex justify-between text-xs text-muted mb-4">
+            <span>Progresso atual</span>
+            <span id="preview-pct">0%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="preview-bar" style="width:0%"></div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-meta">Cancelar</button>
+      <button class="btn btn-primary" id="btn-save-meta">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-text">Salvar Meta</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmar Exclusão -->
+<div class="modal-backdrop" id="modal-del" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h2 class="modal-title">Excluir Meta</h2>
+      <button class="modal-close" id="modal-del-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-secondary">Tem certeza que deseja excluir esta meta? Esta ação não pode ser desfeita.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-del">Cancelar</button>
+      <button class="btn btn-danger" id="btn-confirm-del">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-text">Excluir</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Aportar -->
+<div class="modal-backdrop" id="modal-aporte" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-aporte-title">Registrar Aporte</h2>
+      <button class="modal-close" id="modal-aporte-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group mb-4">
+        <label class="form-label" for="aporte-valor">Valor do aporte (R$)</label>
+        <input class="form-control" type="number" id="aporte-valor" placeholder="Ex: 500" min="0.01" step="0.01" />
+        <span class="form-error hidden" id="aporte-error" role="alert"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-cancel-aporte">Cancelar</button>
+      <button class="btn btn-primary" id="btn-confirm-aporte">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="btn-text">Registrar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+.emoji-opt {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.emoji-opt:hover { background: var(--bg-overlay); border-color: var(--border); }
+.emoji-opt.selected { border-color: var(--brand-primary); background: var(--brand-primary-dim); }
+</style>
+
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/metas.js"></script>
+</body>
+</html>
