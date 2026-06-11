@@ -26,7 +26,7 @@ def register(user: models.UserCreate, db: Session = Depends(get_db)):
 @router.post("/auth/login", response_model=models.Token)
 def login(credentials: models.UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.Usuario).filter(models.Usuario.email == credentials.email).first()
-    if not user or not auth.verify_password(credentials.password, user.senha_hash):
+    if not user or not auth.verify_password(credentials.senha, user.senha_hash):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email ou senha incorretos")
 
     access_token = auth.create_access_token(data={"sub": str(user.id)})

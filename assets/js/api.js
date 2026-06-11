@@ -7,7 +7,7 @@
 // Base URL for the backend API.
 // Configure this to the backend origin if you serve the frontend from a different host/port.
 // Example: 'http://localhost:8000' or 'http://localhost:8000/api'.
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://127.0.0.1:8000';
 
 // ─── HTTP Helper ────────────────────────────────────────
 async function request(method, endpoint, body = null, requiresAuth = true) {
@@ -72,10 +72,10 @@ const API = {
 
   /* ── Auth ── */
   login(email, password) {
-    return request('POST', '/auth/login', { email, password }, false);
+    return request('POST', '/auth/login', { email, senha: password }, false);
   },
   register(nome, email, password) {
-    return request('POST', '/auth/register', { nome, email, password }, false);
+    return request('POST', '/auth/register', { nome, email, senha: password }, false);
   },
   updateProfile(nome) {
     return request('PUT', '/auth/me', { nome });
