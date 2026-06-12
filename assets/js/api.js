@@ -7,7 +7,7 @@
 // Base URL for the backend API.
 // Configure this to the backend origin if you serve the frontend from a different host/port.
 // Example: 'http://localhost:8000' or 'http://localhost:8000/api'.
-const BASE_URL = 'http://127.0.0.1:8000';
+const BASE_URL = 'https://finpilot-production-fd18.up.railway.app';
 
 // ─── HTTP Helper ────────────────────────────────────────
 async function request(method, endpoint, body = null, requiresAuth = true) {
