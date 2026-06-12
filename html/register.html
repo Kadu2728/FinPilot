@@ -156,20 +156,22 @@
     btn.classList.add('loading');
     btn.disabled = true;
 
-    try {
-      const result = await API.register(nome, email, password);
-      if (result.id) {
-        showToast('success', 'Conta criada!', 'Faça login para continuar.');
-        setTimeout(() => { window.location.href = 'login.html'; }, 1200);
-      } else {
-        showToast('error', 'Erro ao criar conta', result.detail || 'Tente novamente.');
-      }
-    } catch (err) {
-      showToast('error', 'Erro de conexão', err.message || 'Verifique se o servidor está rodando.');
-    } finally {
-      btn.classList.remove('loading');
-      btn.disabled = false;
-    }
+  try {
+  const result = await API.register(nome, email, password);
+  if (result.access_token || result.id) {
+    showToast('success', 'Conta criada!', 'Redirecionando para o login...');
+    setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+  } else if (result.detail && result.detail.includes('já cadastrado')) {
+    showToast('error', 'E-mail já cadastrado', 'Use outro e-mail ou faça login.');
+  } else {
+    showToast('error', 'Erro ao criar conta', result.detail || 'Tente novamente.');
+  }
+} catch (err) {
+  showToast('error', 'Erro de conexão', err.message || 'Verifique se o servidor está rodando.');
+} finally {
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
   });
 
   function clearErrors() {
